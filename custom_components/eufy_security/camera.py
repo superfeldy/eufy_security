@@ -159,6 +159,12 @@ class EufySecurityCamera(Camera, EufySecurityEntity):
                 self._last_image = await asyncio.wait_for(self._get_image_from_stream_url(width, height), STREAM_TIMEOUT_SECONDS)
             _LOGGER.debug(f"image 2 - is_empty {self._last_image is None}")
 
+        if not self._last_image and self.product.picture_base64 is not None:
+            # _last_image is only seeded from the cloud thumbnail in __init__. Once it
+            # has been emptied (for instance by a failed grab during a livestream), the
+            # camera would show nothing until a restart, so fall back to the
+            # thumbnail again.
+            self._last_image = self.product.picture_bytes
         _LOGGER.debug(f"async_camera_image 5 - is_empty {self._last_image is None}")
         if self._last_image is not None:
             _LOGGER.debug(f"async_camera_image 6 - {len(self._last_image)}")
